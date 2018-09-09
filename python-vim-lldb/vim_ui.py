@@ -145,8 +145,13 @@ class UI:
           lineNum = int(match.group(2).strip())
           ret.append((loc.IsResolved(), match.group(1), lineNum))
         except ValueError as e:
-          sys.stderr.write("unable to parse breakpoint location line number: '%s'" % match.group(2))
+          if match is None:
+            sys.stderr.write("unable to parse breakpoint location.'")
+          else:
+            sys.stderr.write("unable to parse breakpoint location line number: '%s'" % match.group(2))
           sys.stderr.write(str(e))
+        except AttributeError as e:
+            sys.stderr.write("idk tbh")
 
       return ret
 
