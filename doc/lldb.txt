@@ -21,7 +21,7 @@ CONTENTS                                                       *lldb-contents*
     6. Contributing .................... |lldb-contributing|
 
 
-Maintainer :       Tobias Pflug <tobias.pflug@gmail.com>
+Maintainer :       Nathan Lanza <nathan@lanza.io>
 Original Author:   Daniel Malea <daniel.malea@intel.com>
 License:           Same terms as Vim itself (see |license|)
 
@@ -153,21 +153,15 @@ mapped accordingly using 'lldb_map_' + <command name>.
 
 LICENSE                                         *lldb-license*
 
-Same as Vim itself.
+Same as LLVM itself.
 
 BUGS                                            *lldb-bugs*
 
 If you run into a bug use the github issue tracker to report it:
-http://github.com/gilligan/vim-lldb/issues/
+http://github.com/lanza/vim-lldb/issues/
 
 CONTRIBUTING                                    *lldb-contributing*
 
-If you want to help out you are more then welcome to do so. In fact
-I am sure there are plenty of people out there that will do a better
-job with this plugin than me. My C skills are more than rusty. I mostly
-wanted to make this nice plugin more public and host it in a way in which
-it is easy to install with your favorite plugin manager.
-
-Long story short: Bring on your forks and pull requests.
+placeholder
 
  vim:tw=78:sw=4:ft=help:norl:
