@@ -11,10 +11,11 @@ This plugin provides lldb debbuging integration including
 
 Arbitrary valid lldb commands can be invoked as well.
 
-**NOTE** : This is a fork of the plugin which is part of the llvm distribution. The original
-can be found at http://llvm.org/svn/llvm-project/lldb/trunk/utils/vim-lldb/.
+**NOTE** : This is a fork of the fork by gilligan of the plugin which is part 
+of the llvm distribution. The original can be found at
+http://llvm.org/svn/llvm-project/lldb/trunk/utils/vim-lldb/.
 
-![](https://raw.github.com/gilligan/vim-lldb/master/vim-lldb.png)
+![](https://raw.github.com/lanza/vim-lldb/master/vim-lldb.png)
 
 Prerequisites
 -------------
@@ -27,10 +28,10 @@ Installation
 
 Installation is easiest using a package manager such as bundle:
 
-    Bundle "gilligan/vim-lldb"
+    call minpac#add('lanza/vim-lldb')
 
-Of course you are free to manually copy the files to your vimrc folder if you prefer that for
-whatever weird reason.
+Of course you are free to manually copy the files to your vimrc folder if you
+prefer that for whatever weird reason.
 
 
 Usage/Getting Help
