@@ -531,6 +531,7 @@ class LocalsPane(FrameKeyValuePane):
         and its children
         """
         logging.debug("LocalsPane.format_variable")
+        return []
         MAX_DEPTH = 6
 
         if indent > MAX_DEPTH:
