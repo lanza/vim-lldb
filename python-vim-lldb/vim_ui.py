@@ -7,9 +7,12 @@ import vim
 from vim_panes import *
 from vim_signs import *
 
+import logging as lg
+logging = lg.getLogger("vim-lldb")
 
 def is_same_file(a, b):
     """ returns true if paths a and b are the same file """
+    logging.debug("is_same_file")
     a = os.path.realpath(a)
     b = os.path.realpath(b)
     return a in b or b in a
@@ -18,6 +21,7 @@ def is_same_file(a, b):
 class UI:
     def __init__(self):
         """ Declare UI state variables """
+        logging.debug("UI.__init__")
 
         # Default panes to display
         self.defaultPanes = [
@@ -49,12 +53,14 @@ class UI:
 
     def activate(self):
         """ Activate UI: display default set of panes """
+        logging.debug("UI.activate")
         self.paneCol.prepare(self.defaultPanes)
 
     def get_user_buffers(self, filter_name=None):
         """ Returns a list of buffers that are not a part of the LLDB UI. That is, they
         are not contained in the PaneLayout object self.paneCol.
-    """
+        """
+        logging.debug("UI.get_user_buffers")
         ret = []
         for w in vim.windows:
             b = w.buffer
@@ -65,11 +71,13 @@ class UI:
 
     def update_pc(self, process, buffers, goto_file):
         """ Place the PC sign on the PC location of each thread's selected frame """
+        logging.debug("UI.update_pc")
 
         def GetPCSourceLocation(thread):
             """ Returns a tuple (thread_index, file, line, column) that represents where
-          the PC sign should be placed for a thread.
-      """
+            the PC sign should be placed for a thread.
+            """
+            logging.debug("UI.update_pc.GetPCSourceLocation")
 
             frame = thread.GetSelectedFrame()
             frame_num = frame.GetFrameID()
@@ -148,9 +156,11 @@ class UI:
 
     def update_breakpoints(self, target, buffers):
         """ Decorates buffer with signs corresponding to breakpoints in target. """
+        logging.debug("UI.update_breakpoint")
 
         def GetBreakpointLocations(bp):
             """ Returns a list of tuples (resolved, filename, line) where a breakpoint was resolved. """
+            logging.debug("UI.update_breakpoint")
             if not bp.IsValid():
                 sys.stderr.write("breakpoint is invalid, no locations")
                 return []
@@ -215,7 +225,8 @@ class UI:
         """ Updates debugger info panels and breakpoint/pc marks and prints
         status to the vim status line. If goto_file is True, the user's
         cursor is moved to the source PC location in the selected frame.
-    """
+        """
+        logging.debug("UI.update")
 
         self.paneCol.update(target, controller)
         self.update_breakpoints(target, self.get_user_buffers())
@@ -230,20 +241,24 @@ class UI:
 
     def haveBreakpoint(self, file, line):
         """ Returns True if we have a breakpoint at file:line, False otherwise  """
+        logging.debug("UI.haveBreakpoint")
         return (file, line) in self.markedBreakpoints
 
     def getBreakpoints(self, fname, line):
         """ Returns the LLDB SBBreakpoint object at fname:line """
+        logging.debug("UI.getBreakpoints")
         if self.haveBreakpoint(fname, line):
             return self.markedBreakpoints[(fname, line)]
         else:
             return None
 
     def deleteBreakpoints(self, name, line):
+        logging.debug("UI.deleteBreakpoints")
         del self.markedBreakpoints[(name, line)]
 
     def showWindow(self, name):
         """ Shows (un-hides) window pane specified by name """
+        logging.debug("UI.showWindow")
         if not self.paneCol.havePane(name):
             sys.stderr.write("unknown window: %s" % name)
             return False
@@ -252,6 +267,7 @@ class UI:
 
     def hideWindow(self, name):
         """ Hides window pane specified by name """
+        logging.debug("UI.hideWindow")
         if not self.paneCol.havePane(name):
             sys.stderr.write("unknown window: %s" % name)
             return False

@@ -3,6 +3,8 @@
 
 import vim
 
+import logging as lg
+logging = lg.getLogger("vim-lldb")
 
 class VimSign(object):
     SIGN_TEXT_BREAKPOINT_RESOLVED = "B>"
@@ -21,6 +23,7 @@ class VimSign(object):
 
     def __init__(self, sign_text, buffer, line_number, highlight_colour=None):
         """ Define the sign and highlight (if applicable) and show the sign. """
+        logging.debug("VimSign.__init__")
 
         # Get the sign name, either by defining it, or looking it up in the map of defined signs
         key = (sign_text, highlight_colour)
@@ -34,6 +37,7 @@ class VimSign(object):
 
     def define(self, sign_text, highlight_colour):
         """ Defines sign and highlight (if highlight_colour is not None). """
+        logging.debug("VimSign.define")
         sign_name = "sign%d" % VimSign.name_id
         if highlight_colour is None:
             vim.command("sign define %s text=%s" % (sign_name, sign_text))
@@ -52,6 +56,7 @@ class VimSign(object):
         return sign_name
 
     def show(self, name, buffer_number, line_number):
+        logging.debug("VimSign.show")
         self.id = VimSign.sign_id
         VimSign.sign_id += 1
         vim.command(
@@ -61,12 +66,14 @@ class VimSign(object):
         pass
 
     def hide(self):
+        logging.debug("VimSign.hide")
         vim.command("sign unplace %d" % self.id)
         pass
 
 
 class BreakpointSign(VimSign):
     def __init__(self, buffer, line_number, is_resolved):
+        logging.debug("BreakpointSign.__init__")
         txt = (
             VimSign.SIGN_TEXT_BREAKPOINT_RESOLVED
             if is_resolved
@@ -77,6 +84,7 @@ class BreakpointSign(VimSign):
 
 class PCSign(VimSign):
     def __init__(self, buffer, line_number, is_selected_thread):
+        logging.debug("PCSign.__init__")
         super(PCSign, self).__init__(
             VimSign.SIGN_TEXT_PC,
             buffer,

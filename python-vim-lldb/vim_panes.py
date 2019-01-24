@@ -38,6 +38,8 @@ import lldb
 import vim
 
 import sys
+import logging as lg
+logging = lg.getLogger("vim-lldb")
 
 # ==============================================================
 # Get the description of an lldb object or None if not available
@@ -54,6 +56,7 @@ def get_description(obj, option=None):
         o lldb.eDescriptionLevelFull
         o lldb.eDescriptionLevelVerbose
     """
+    logging.debug("get_description")
     method = getattr(obj, "GetDescription")
     if not method:
         return None
@@ -74,6 +77,7 @@ def get_description(obj, option=None):
 
 def get_selected_thread(target):
     """ Returns a tuple with (thread, error) where thread == None if error occurs """
+    logging.debug("get_selected_thread")
     process = target.GetProcess()
     if process is None or not process.IsValid():
         return (None, VimPane.MSG_NO_PROCESS)
@@ -86,6 +90,7 @@ def get_selected_thread(target):
 
 def get_selected_frame(target):
     """ Returns a tuple with (frame, error) where frame == None if error occurs """
+    logging.debug("get_selected_frame")
     (thread, error) = get_selected_thread(target)
     if thread is None:
         return (None, error)
@@ -97,12 +102,14 @@ def get_selected_frame(target):
 
 
 def _cmd(cmd):
+    logging.debug("_cmd")
     vim.command("call confirm('%s')" % cmd)
     vim.command(cmd)
 
 
 def move_cursor(line, col=0):
     """ moves cursor to specified line and col """
+    logging.debug("move_cursor")
     cw = vim.current.window
     if cw.cursor[0] != line:
         vim.command('execute "normal %dgg"' % line)
@@ -110,33 +117,39 @@ def move_cursor(line, col=0):
 
 def winnr():
     """ Returns currently selected window number """
+    logging.debug("winnr")
     return int(vim.eval("winnr()"))
 
 
 def bufwinnr(name):
     """ Returns window number corresponding with buffer name """
+    logging.debug("bufwinnr")
     return int(vim.eval("bufwinnr('%s')" % name))
 
 
 def goto_window(nr):
     """ go to window number nr"""
+    logging.debug("goto_window")
     if nr != winnr():
         vim.command(str(nr) + " wincmd w")
 
 
 def goto_next_window():
     """ go to next window. """
+    logging.debug("goto_next_window")
     vim.command("wincmd w")
     return (winnr(), vim.current.buffer.name)
 
 
 def goto_previous_window():
     """ go to previously selected window """
+    logging.debug("goto_previous_window")
     vim.command('execute "normal \\<c-w>p"')
 
 
 def have_gui():
     """ Returns True if vim is in a gui (Gvim/MacVim), False otherwise. """
+    logging.debug("have_gui")
     return int(vim.eval("has('gui_running')")) == 1
 
 
@@ -144,14 +157,17 @@ class PaneLayout(object):
     """ A container for a (vertical) group layout of VimPanes """
 
     def __init__(self):
+        logging.debug("PaneLayout.__init__")
         self.panes = {}
 
     def havePane(self, name):
         """ Returns true if name is a registered pane, False otherwise """
+        logging.debug("PaneLayout.havePane")
         return name in self.panes
 
     def prepare(self, panes=[]):
         """ Draw panes on screen. If empty list is provided, show all. """
+        logging.debug("PaneLayout.prepare")
 
         # If we can't select a window contained in the layout, we are doing a first draw
         first_draw = not self.selectWindow(True)
@@ -176,7 +192,8 @@ class PaneLayout(object):
     def contains(self, bufferName=None):
         """ Returns True if window with name bufferName is contained in the layout, False otherwise.
         If bufferName is None, the currently selected window is checked.
-    """
+        """
+        logging.debug("PaneLayout.contains")
         if not bufferName:
             bufferName = vim.current.buffer.name
 
@@ -189,7 +206,8 @@ class PaneLayout(object):
         """ Selects a window contained in the layout (if select_contained = True) and returns True.
         If select_contained = False, a window that is not contained is selected. Returns False
         if no group windows can be selected.
-    """
+        """
+        logging.debug("PaneLayout.selectWindow")
         if select_contained == self.contains():
             # Simple case: we are already selected
             return True
@@ -205,14 +223,17 @@ class PaneLayout(object):
 
     def hide(self, panes=[]):
         """ Hide panes specified. If empty list provided, hide all. """
+        logging.debug("PaneLayout.hide")
         for name in self.panes:
             if name in panes or len(panes) == 0:
                 self.panes[name].destroy()
 
     def registerForUpdates(self, p):
+        logging.debug("PaneLayout.registerForUpdates")
         self.panes[p.name] = p
 
     def update(self, target, controller):
+        logging.debug("PaneLayout.update")
         for name in self.panes:
             self.panes[name].update(target, controller)
 
@@ -237,6 +258,7 @@ class VimPane(object):
     highlightTypes = []
 
     def __init__(self, owner, name, open_below=False, height=3):
+        logging.debug("VimPane.__init__")
         self.owner = owner
         self.name = name
         self.buffer = None
@@ -247,6 +269,7 @@ class VimPane(object):
 
     def isPrepared(self):
         """ check window is OK """
+        logging.debug("VimPane.isPrepared")
         if (
             self.buffer == None
             or len(dir(self.buffer)) == 0
@@ -257,20 +280,24 @@ class VimPane(object):
 
     def prepare(self, method="new"):
         """ check window is OK, if not then create """
+        logging.debug("VimPane.prepare")
         if not self.isPrepared():
             self.create(method)
 
     def on_create(self):
+        logging.debug("VimPane.on_create")
         pass
 
     def destroy(self):
         """ destroy window """
+        logging.debug("VimPane.destroy")
         if self.buffer == None or len(dir(self.buffer)) == 0:
             return
         vim.command("bdelete " + self.name)
 
     def create(self, method):
         """ create window """
+        logging.debug("VimPane.create")
 
         if method != "edit":
             belowcmd = "below" if self.openBelow else ""
@@ -306,6 +333,7 @@ class VimPane(object):
 
     def update(self, target, controller):
         """ updates buffer contents """
+        logging.debug("VimPane.update")
         self.target = target
         if not self.isPrepared():
             # Window is hidden, or otherwise not ready for an update
@@ -340,11 +368,13 @@ class VimPane(object):
         """ Returns the line number to move the cursor to, or None to leave
         it where the user last left it.
         Subclasses implement this to define custom behaviour.
-    """
+        """
+        logging.debug("VimPane.get_selected_line")
         return None
 
     def apply_highlights(self):
         """ Highlights each set of lines in  each highlight group """
+        logging.debug("VimPane.apply_highlights")
         highlights = self.get_highlights()
         for highlightType in highlights:
             lines = highlights[highlightType]
@@ -359,6 +389,7 @@ class VimPane(object):
 
     def define_highlight(self, name, colour):
         """ Defines highlihght """
+        logging.debug("VimPane.define_highlight")
         if name in VimPane.highlightTypes:
             # highlight already defined
             return
@@ -368,6 +399,7 @@ class VimPane(object):
 
     def write(self, msg):
         """ replace buffer with msg"""
+        logging.debug("VimPane.write")
         self.prepare()
 
         msg = str(msg.encode("utf-8", "replace")).split("\n")
@@ -383,12 +415,14 @@ class VimPane(object):
 
     def clean(self):
         """ clean all datas in buffer """
+        logging.debug("VimPane.clean")
         self.prepare()
         vim.command(":%d")
         # self.buffer[:] = None
 
     def get_content(self, target, controller):
         """ subclasses implement this to provide pane content """
+        logging.debug("VimPane.get_content")
         assert 0 and "pane subclass must implement this"
         pass
 
@@ -396,7 +430,8 @@ class VimPane(object):
         """ Subclasses implement this to provide pane highlights.
         This function is expected to return a map of:
           { highlight_name ==> [line_number, ...], ... }
-    """
+        """
+        logging.debug("VimPane.get_highlights")
         return {}
 
 
@@ -404,7 +439,8 @@ class FrameKeyValuePane(VimPane):
     def __init__(self, owner, name, open_below):
         """ Initialize parent, define member variables, choose which highlight
         to use based on whether or not we have a gui (MacVim/Gvim).
-    """
+        """
+        logging.debug("FrameKeyValuePane.__init__")
 
         VimPane.__init__(self, owner, name, open_below)
 
@@ -422,13 +458,15 @@ class FrameKeyValuePane(VimPane):
 
     def format_pair(self, key, value, changed=False):
         """ Formats a key/value pair. Appends a '*' if changed == True """
+        logging.debug("FrameKeyValuePane.format_pair")
         marker = "*" if changed else " "
         return "%s %s = %s\n" % (marker, key, value)
 
     def get_content(self, target, controller):
         """ Get content for a frame-aware pane. Also builds the list of lines that
         need highlighting (i.e. changed values.)
-    """
+        """
+        logging.debug("FrameKeyValuePane.get_content")
         if target is None or not target.IsValid():
             return VimPane.MSG_NO_TARGET
 
@@ -469,6 +507,7 @@ class FrameKeyValuePane(VimPane):
         return output
 
     def get_highlights(self):
+        logging.debug("FrameKeyValuePane.get_highlights")
         ret = {}
         ret[self.changedHighlight] = self.changedLines
         return ret
@@ -478,6 +517,7 @@ class LocalsPane(FrameKeyValuePane):
     """ Pane that displays local variables """
 
     def __init__(self, owner, name="locals"):
+        logging.debug("LocalsPane.__init__")
         FrameKeyValuePane.__init__(self, owner, name, open_below=True)
 
         # FIXME: allow users to customize display of args/locals/statics/scope
@@ -489,7 +529,8 @@ class LocalsPane(FrameKeyValuePane):
     def format_variable(self, var, indent=0):
         """ Returns a list of tuples of strings "(Type) Name", "Value" for SBValue var
         and its children
-    """
+        """
+        logging.debug("LocalsPane.format_variable")
         MAX_DEPTH = 6
 
         if indent > MAX_DEPTH:
@@ -514,6 +555,7 @@ class LocalsPane(FrameKeyValuePane):
 
     def get_frame_content(self, frame):
         """ Returns list of key-value pairs of local variables in frame """
+        logging.debug("LocalsPane.get_frame_content")
         vals = frame.GetVariables(
             self.arguments, self.show_locals, self.show_statics, self.show_in_scope_only
         )
@@ -529,10 +571,12 @@ class RegistersPane(FrameKeyValuePane):
     """ Pane that displays the contents of registers """
 
     def __init__(self, owner, name="registers"):
+        logging.debug("RegistersPane.__init__")
         FrameKeyValuePane.__init__(self, owner, name, open_below=True)
 
     def format_register(self, reg):
         """ Returns a tuple of strings ("name", "value") for SBRegister reg. """
+        logging.debug("RegistersPane.format_register")
         name = reg.GetName()
         val = reg.GetValue()
         if val is None:
@@ -541,6 +585,7 @@ class RegistersPane(FrameKeyValuePane):
 
     def get_frame_content(self, frame):
         """ Returns a list of key-value pairs ("name", "value") of registers in frame """
+        logging.debug("RegistersPane.get_frame_content")
 
         result = []
         for register_sets in frame.GetRegisters():
@@ -556,14 +601,17 @@ class CommandPane(VimPane):
     """ Pane that displays the output of an LLDB command """
 
     def __init__(self, owner, name, open_below, process_required=True):
+        logging.debug("CommandPane.__init__")
         VimPane.__init__(self, owner, name, open_below)
         self.process_required = process_required
 
     def setCommand(self, command, args=""):
+        logging.debug("CommandPane.setCommand")
         self.command = command
         self.args = args
 
     def get_content(self, target, controller):
+        logging.debug("CommandPane.get_content")
         output = ""
         if not target:
             output = VimPane.MSG_NO_TARGET
@@ -578,10 +626,11 @@ class StoppedCommandPane(CommandPane):
     """ Pane that displays the output of an LLDB command when the process is
       stopped; otherwise displays process status. This class also implements
       highlighting for a single line (to show a single-line selected entity.)
-  """
+    """
 
     def __init__(self, owner, name, open_below):
         """ Initialize parent and define highlight to use for selected line. """
+        logging.debug("StoppedCommandPane.__init__")
         CommandPane.__init__(self, owner, name, open_below)
         if have_gui():
             self.selectedHighlight = VimPane.SELECTED_HIGHLIGHT_NAME_GUI
@@ -595,7 +644,8 @@ class StoppedCommandPane(CommandPane):
     def get_content(self, target, controller):
         """ Returns the output of a command that relies on the process being stopped.
         If the process is not in 'stopped' state, the process status is returned.
-    """
+        """
+        logging.debug("StoppedCommandPane.get_content")
         output = ""
         if not target or not target.IsValid():
             output = VimPane.MSG_NO_TARGET
@@ -610,7 +660,8 @@ class StoppedCommandPane(CommandPane):
     def get_highlights(self):
         """ Highlight the line under the cursor. Users moving the cursor has
         no effect on the selected line.
-    """
+        """
+        logging.debug("StoppedCommandPane.get_highlights")
         ret = {}
         line = self.get_selected_line()
         if line is not None:
@@ -621,7 +672,8 @@ class StoppedCommandPane(CommandPane):
     def get_selected_line(self):
         """ Subclasses implement this to control where the cursor (and selected highlight)
         is placed.
-    """
+        """
+        logging.debug("StoppedCommandPane.get_selected_line")
         return None
 
 
@@ -629,6 +681,7 @@ class DisassemblyPane(CommandPane):
     """ Pane that displays disassembly around PC """
 
     def __init__(self, owner, name="disassembly"):
+        logging.debug("DisassemblyPane.__init__")
         CommandPane.__init__(self, owner, name, open_below=True)
 
         # FIXME: let users customize the number of instructions to disassemble
@@ -639,6 +692,7 @@ class ThreadPane(StoppedCommandPane):
     """ Pane that displays threads list """
 
     def __init__(self, owner, name="threads"):
+        logging.debug("ThreadPane.__init__")
         StoppedCommandPane.__init__(self, owner, name, open_below=False)
         self.setCommand("thread", "list")
 
@@ -663,15 +717,17 @@ class BacktracePane(StoppedCommandPane):
     """ Pane that displays backtrace """
 
     def __init__(self, owner, name="backtrace"):
+        logging.debug("BacktracePane.__init__")
         StoppedCommandPane.__init__(self, owner, name, open_below=False)
         self.setCommand("bt", "")
 
     def get_selected_line(self):
-        """ Returns the line number in the buffer with the selected frame. 
+        """ Returns the line number in the buffer with the selected frame.
         Formula: selected_line = selected_frame_id + 2
         FIXME: the above formula hack does not work when the function return
                value is printed in the bt window; the wrong line is highlighted.
-    """
+        """
+        logging.debug("BacktracePane.get_selected_line")
 
         (frame, err) = get_selected_frame(self.target)
         if frame is None:
@@ -682,6 +738,7 @@ class BacktracePane(StoppedCommandPane):
 
 class BreakpointsPane(CommandPane):
     def __init__(self, owner, name="breakpoints"):
+        logging.debug("BreakpointsPane.__init__")
         super(BreakpointsPane, self).__init__(
             owner, name, open_below=False, process_required=False
         )
