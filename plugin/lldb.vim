@@ -4,8 +4,8 @@
 "  Maintainer:  Tobias Pflug <tobias.pflug@gmail.com>
 "  License:     Same License as Vim itself
 "  --------------------------------------------------------------------
-
-if (exists('g:loaded_lldb') && g:loaded_lldb) || v:version < 703 || &cp || !has('python')
+finish
+if (exists('g:loaded_lldb') && g:loaded_lldb) || v:version < 703 || &cp || !has('python') || system('which lldb')
     finish
 endif
 let g:loaded_lldb = 1
