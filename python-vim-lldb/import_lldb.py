@@ -1,8 +1,8 @@
-
 # Locate and load the lldb python module
 
 import os, sys
 import logging as lg
+
 logging = lg.getLogger("vim-lldb")
 
 

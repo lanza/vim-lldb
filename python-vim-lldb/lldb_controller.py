@@ -1,4 +1,3 @@
-
 #
 # This file defines the layer that talks to lldb
 #
@@ -8,6 +7,7 @@ import lldb
 import vim
 from vim_ui import UI
 import logging as lg
+
 logging = lg.getLogger("vim-lldb")
 
 # =================================================
@@ -87,7 +87,8 @@ class LLDBController(object):
         self.ui = UI()
 
     def completeCommand(self, a, l, p):
-        """ Returns a list of viable completions for command a with length l and cursor at p  """
+        """ Returns a list of viable completions for command a with length l and
+        cursor at p  """
         logging.debug("LLDBController.completeCommand")
 
         assert l[0] == "L"
@@ -109,7 +110,8 @@ class LLDBController(object):
 
         if result.GetSize() > 0:
             results = filter(
-                None, [result.GetStringAtIndex(x) for x in range(result.GetSize())]
+                None,
+                [result.GetStringAtIndex(x) for x in range(result.GetSize())],
             )
             return results
         else:
@@ -149,9 +151,8 @@ class LLDBController(object):
         return self.doCommand(command, args, "select" != a[0], True)
 
     def doProcess(self, args):
-        """ Handle 'process' command. If 'launch' is requested, use doLaunch() instead
-        of the command interpreter to start the inferior process.
-    """
+        """ Handle 'process' command. If 'launch' is requested, use doLaunch()
+        instead of the command interpreter to start the inferior process.  """
         logging.debug("LLDBController.doProcess")
         a = args.split(" ")
         if len(args) == 0 or (len(a) > 0 and a[0] != "launch"):
@@ -270,7 +271,9 @@ class LLDBController(object):
             exe, None, None, self.load_dependent_modules, err
         )
         if not self.target:
-            sys.stderr.write("Error creating target %s. %s" % (str(exe), str(err)))
+            sys.stderr.write(
+                "Error creating target %s. %s" % (str(exe), str(err))
+            )
             return
 
         self.ui.activate()
@@ -278,7 +281,8 @@ class LLDBController(object):
 
     def doContinue(self):
         """ Handle 'contiue' command.
-        FIXME: switch to doCommand("continue", ...) to handle -i ignore-count param.
+        FIXME: switch to doCommand("continue", ...) to handle -i ignore-count
+        param.
     """
         logging.debug("LLDBController.doContinue")
 
@@ -290,10 +294,9 @@ class LLDBController(object):
         self.processPendingEvents(self.eventDelayContinue)
 
     def doBreakpoint(self, args):
-        """ Handle breakpoint command with command interpreter, except if the user calls
-        "breakpoint" with no other args, in which case add a breakpoint at the line
-        under the cursor.
-    """
+        """ Handle breakpoint command with command interpreter, except if the
+        user calls "breakpoint" with no other args, in which case add a
+        breakpoint at the line under the cursor.  """
         logging.debug("LLDBController.doBreakpoint")
         a = args.split(" ")
         if len(args) == 0:
@@ -305,8 +308,9 @@ class LLDBController(object):
             name = cb.name
             line = cw.cursor[0]
 
-            # Since the UI is responsbile for placing signs at bp locations, we have to
-            # ask it if there already is one or more breakpoints at (file, line)...
+            # Since the UI is responsbile for placing signs at bp locations, we
+            # have to ask it if there already is one or more breakpoints at
+            # (file, line)...
             if self.ui.haveBreakpoint(name, line):
                 bps = self.ui.getBreakpoints(name, line)
                 args = "delete %s" % " ".join([str(b.GetID()) for b in bps])
@@ -357,8 +361,11 @@ class LLDBController(object):
             result.GetOutput() if result.Succeeded() else result.GetError(),
         )
 
-    def doCommand(self, command, command_args, print_on_success=True, goto_file=False):
-        """ Run cmd in interpreter and print result (success or failure) on the vim status line. """
+    def doCommand(
+        self, command, command_args, print_on_success=True, goto_file=False
+    ):
+        """ Run cmd in interpreter and print result (success or failure) on the
+        vim status line. """
         logging.debug("LLDBController.doCommand")
         (success, output) = self.getCommandResult(command, command_args)
         if success:
@@ -380,10 +387,9 @@ class LLDBController(object):
         )
 
     def processPendingEvents(self, wait_seconds=0, goto_file=True):
-        """ Handle any events that are queued from the inferior.
-        Blocks for at most wait_seconds, or if wait_seconds == 0,
-        process only events that are already queued.
-    """
+        """ Handle any events that are queued from the inferior.  Blocks for at
+        most wait_seconds, or if wait_seconds == 0, process only events that are
+        already queued.  """
         logging.debug("LLDBController.processPendingEvents")
 
         status = None
@@ -394,16 +400,21 @@ class LLDBController(object):
             old_state = self.process.GetState()
             new_state = None
             done = False
-            if old_state == lldb.eStateInvalid or old_state == lldb.eStateExited:
+            if (
+                old_state == lldb.eStateInvalid
+                or old_state == lldb.eStateExited
+            ):
                 # Early-exit if we are in 'boring' states
                 pass
             else:
                 while not done and self.processListener is not None:
                     if not self.processListener.PeekAtNextEvent(event):
                         if wait_seconds > 0:
-                            # No events on the queue, but we are allowed to wait for wait_seconds
-                            # for any events to show up.
-                            self.processListener.WaitForEvent(wait_seconds, event)
+                            # No events on the queue, but we are allowed to wait
+                            # for wait_seconds for any events to show up.
+                            self.processListener.WaitForEvent(
+                                wait_seconds, event
+                            )
                             new_state = lldb.SBProcess.GetStateFromEvent(event)
 
                             num_events_handled += 1
@@ -433,9 +444,8 @@ class LLDBController(object):
 
 
 def returnCompleteCommand(a, l, p):
-    """ Returns a "\n"-separated string with possible completion results
-      for command a with length l and cursor at p.
-    """
+    """ Returns a "\n"-separated string with possible completion results for
+    command a with length l and cursor at p.  """
     logging.debug("returnCompleteCommand")
     separator = "\n"
     results = ctrl.completeCommand(a, l, p)
@@ -443,10 +453,9 @@ def returnCompleteCommand(a, l, p):
 
 
 def returnCompleteWindow(a, l, p):
-    """ Returns a "\n"-separated string with possible completion results
-      for commands that expect a window name parameter (like hide/show).
-      FIXME: connect to ctrl.ui instead of hardcoding the list here
-    """
+    """ Returns a "\n"-separated string with possible completion results for
+    commands that expect a window name parameter (like hide/show).  FIXME:
+    connect to ctrl.ui instead of hardcoding the list here """
     logging.debug("returnCompleteWindow")
     separator = "\n"
     results = [

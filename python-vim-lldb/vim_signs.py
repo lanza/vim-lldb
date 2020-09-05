@@ -1,10 +1,11 @@
-
 # Classes responsible for drawing signs in the Vim user interface.
 
 import vim
 
 import logging as lg
+
 logging = lg.getLogger("vim-lldb")
+
 
 class VimSign(object):
     SIGN_TEXT_BREAKPOINT_RESOLVED = "B>"
@@ -25,7 +26,8 @@ class VimSign(object):
         """ Define the sign and highlight (if applicable) and show the sign. """
         logging.debug("VimSign.__init__")
 
-        # Get the sign name, either by defining it, or looking it up in the map of defined signs
+        # Get the sign name, either by defining it, or looking it up in the map
+        # of defined signs
         key = (sign_text, highlight_colour)
         if not key in VimSign.defined_signs:
             name = self.define(sign_text, highlight_colour)
@@ -49,7 +51,12 @@ class VimSign(object):
             )
             vim.command(
                 "sign define %s text=%s linehl=%s texthl=%s"
-                % (sign_name, sign_text, self.highlight_name, self.highlight_name)
+                % (
+                    sign_name,
+                    sign_text,
+                    self.highlight_name,
+                    self.highlight_name,
+                )
             )
         VimSign.defined_signs[(sign_text, highlight_colour)] = sign_name
         VimSign.name_id += 1

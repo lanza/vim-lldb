@@ -1,4 +1,3 @@
-
 # LLDB UI state in the Vim user interface.
 
 import os, re, sys
@@ -8,7 +7,9 @@ from vim_panes import *
 from vim_signs import *
 
 import logging as lg
+
 logging = lg.getLogger("vim-lldb")
+
 
 def is_same_file(a, b):
     """ returns true if paths a and b are the same file """
@@ -57,9 +58,8 @@ class UI:
         self.paneCol.prepare(self.defaultPanes)
 
     def get_user_buffers(self, filter_name=None):
-        """ Returns a list of buffers that are not a part of the LLDB UI. That is, they
-        are not contained in the PaneLayout object self.paneCol.
-        """
+        """Returns a list of buffers that are not a part of the LLDB UI. That
+        is, they are not contained in the PaneLayout object self.paneCol."""
         logging.debug("UI.get_user_buffers")
         ret = []
         for w in vim.windows:
@@ -70,13 +70,12 @@ class UI:
         return ret
 
     def update_pc(self, process, buffers, goto_file):
-        """ Place the PC sign on the PC location of each thread's selected frame """
+        """Place the PC sign on the PC location of each thread's selected frame"""
         logging.debug("UI.update_pc")
 
         def GetPCSourceLocation(thread):
-            """ Returns a tuple (thread_index, file, line, column) that represents where
-            the PC sign should be placed for a thread.
-            """
+            """Returns a tuple (thread_index, file, line, column) that
+            represents where the PC sign should be placed for a thread."""
             logging.debug("UI.update_pc.GetPCSourceLocation")
 
             frame = thread.GetSelectedFrame()
@@ -88,7 +87,8 @@ class UI:
 
             if le.IsValid():
                 path = os.path.join(
-                    le.GetFileSpec().GetDirectory(), le.GetFileSpec().GetFilename()
+                    le.GetFileSpec().GetDirectory(),
+                    le.GetFileSpec().GetFilename(),
                 )
                 return (thread.GetIndexID(), path, le.GetLine(), le.GetColumn())
             return None
@@ -131,8 +131,10 @@ class UI:
                 and os.path.exists(fname)
                 and goto_file
             ):
-                # FIXME: If current buffer is modified, vim will complain when we try to switch away.
-                #        Find a way to detect if the current buffer is modified, and...warn instead?
+                # FIXME: If current buffer is modified, vim will complain when
+                # we try to switch away.
+                #        Find a way to detect if the current buffer is modified,
+                #        and...warn instead?
                 vim.command('execute ":e %s"' % fname)
                 buf = vim.current.buffer
             elif len(buffers) > 1 and goto_file:
@@ -155,11 +157,12 @@ class UI:
                     )
 
     def update_breakpoints(self, target, buffers):
-        """ Decorates buffer with signs corresponding to breakpoints in target. """
+        """Decorates buffer with signs corresponding to breakpoints in target."""
         logging.debug("UI.update_breakpoint")
 
         def GetBreakpointLocations(bp):
-            """ Returns a list of tuples (resolved, filename, line) where a breakpoint was resolved. """
+            """Returns a list of tuples (resolved, filename, line) where a
+            breakpoint was resolved."""
             logging.debug("UI.update_breakpoint")
             if not bp.IsValid():
                 sys.stderr.write("breakpoint is invalid, no locations")
@@ -176,7 +179,9 @@ class UI:
                     ret.append((loc.IsResolved(), match.group(1), lineNum))
                 except ValueError as e:
                     if match is None:
-                        sys.stderr.write("unable to parse breakpoint location.'")
+                        sys.stderr.write(
+                            "unable to parse breakpoint location.'"
+                        )
                     else:
                         sys.stderr.write(
                             "unable to parse breakpoint location line number: '%s'"
@@ -222,10 +227,8 @@ class UI:
                 self.breakpointSigns[(b, l, r)] = s
 
     def update(self, target, status, controller, goto_file=False):
-        """ Updates debugger info panels and breakpoint/pc marks and prints
-        status to the vim status line. If goto_file is True, the user's
-        cursor is moved to the source PC location in the selected frame.
-        """
+        """Updates debugger info panels and breakpoint/pc marks and prints status to the vim status line. If goto_file is True, the user's cursor
+        is moved to the source PC location in the selected frame."""
         logging.debug("UI.update")
 
         self.paneCol.update(target, controller)
@@ -240,7 +243,8 @@ class UI:
             print(status)
 
     def haveBreakpoint(self, file, line):
-        """ Returns True if we have a breakpoint at file:line, False otherwise  """
+        """ Returns True if we have a breakpoint at file:line, False otherwise
+        """
         logging.debug("UI.haveBreakpoint")
         return (file, line) in self.markedBreakpoints
 

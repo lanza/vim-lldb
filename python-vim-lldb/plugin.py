@@ -1,11 +1,12 @@
-
-# Try to import all dependencies, catch and handle the error gracefully if it fails.
+# Try to import all dependencies, catch and handle the error gracefully if it
+# fails.
 import logging as lg
+
 logging = lg.getLogger("vim-lldb")
 logging.setLevel(lg.DEBUG)
 fh = lg.FileHandler("/tmp/vim-lldb.log")
 fh.setLevel(lg.DEBUG)
-formatter = lg.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = lg.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 fh.setFormatter(formatter)
 logging.addHandler(fh)
 

@@ -1,8 +1,8 @@
 #
 # This file contains implementations of the LLDB display panes in VIM
 #
-# The most generic way to define a new window is to inherit from VimPane
-# and to implement:
+# The most generic way to define a new window is to inherit from VimPane and to
+# implement:
 # - get_content() - returns a string with the pane contents
 #
 # Optionally, to highlight text, implement:
@@ -13,13 +13,13 @@
 # at some point in the constructor.
 #
 #
-# If the pane shows some key-value data that is in the context of a
-# single frame, inherit from FrameKeyValuePane and implement:
+# If the pane shows some key-value data that is in the context of a single
+# frame, inherit from FrameKeyValuePane and implement:
 # - get_frame_content(self, SBFrame frame)
 #
 #
-# If the pane presents some information that can be retrieved with
-# a simple LLDB command while the subprocess is stopped, inherit
+# If the pane presents some information that can be retrieved with a simple LLDB
+# command while the subprocess is stopped, inherit
 # from StoppedCommandPane and call:
 # - self.setCommand(command, command_args)
 # at some point in the constructor.
@@ -39,6 +39,7 @@ import vim
 
 import sys
 import logging as lg
+
 logging = lg.getLogger("vim-lldb")
 
 # ==============================================================
