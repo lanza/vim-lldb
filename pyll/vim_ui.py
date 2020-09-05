@@ -227,7 +227,8 @@ class UI:
                 self.breakpointSigns[(b, l, r)] = s
 
     def update(self, target, status, controller, goto_file=False):
-        """Updates debugger info panels and breakpoint/pc marks and prints status to the vim status line. If goto_file is True, the user's cursor
+        """Updates debugger info panels and breakpoint/pc marks and prints
+        status to the vim status line. If goto_file is True, the user's cursor
         is moved to the source PC location in the selected frame."""
         logging.debug("UI.update")
 
@@ -243,8 +244,7 @@ class UI:
             print(status)
 
     def haveBreakpoint(self, file, line):
-        """ Returns True if we have a breakpoint at file:line, False otherwise
-        """
+        """Returns True if we have a breakpoint at file:line, False otherwise"""
         logging.debug("UI.haveBreakpoint")
         return (file, line) in self.markedBreakpoints
 

@@ -6,17 +6,17 @@ import logging as lg
 logging = lg.getLogger("vim-lldb")
 
 
-def import_lldb():
-    """ Find and import the lldb modules. This function tries to find the lldb
-        module by:
-      1. Simply by doing "import lldb" in case the system python installation
-         is aware of lldb. If that fails,
-      2. Executes the lldb executable pointed to by the LLDB environment
-         variable (or if unset, the first lldb on PATH") with the -P flag to
-         determine the PYTHONPATH to set. If the lldb executable returns a valid
-         path, it is added to sys.path and the import is attempted again. If
-         that fails, 3. On Mac OS X the default Xcode 4.5 installation path.
-  """
+def do_import_lldb():
+    """Find and import the lldb modules. This function tries to find the lldb
+      module by:
+    1. Simply by doing "import lldb" in case the system python installation
+       is aware of lldb. If that fails,
+    2. Executes the lldb executable pointed to by the LLDB environment
+       variable (or if unset, the first lldb on PATH") with the -P flag to
+       determine the PYTHONPATH to set. If the lldb executable returns a valid
+       path, it is added to sys.path and the import is attempted again. If
+       that fails, 3. On Mac OS X the default Xcode 4.5 installation path.
+    """
 
     # Try simple 'import lldb', in case of a system-wide install or a
     # pre-configured PYTHONPATH
@@ -40,7 +40,7 @@ def import_lldb():
         with open(os.devnull, "w") as fnull:
             lldb_minus_p_path = check_output(
                 "%s -P" % lldb_executable, shell=True, stderr=fnull
-            ).strip()
+            ).strip().decode("utf8")
         if not os.path.exists(lldb_minus_p_path):
             # lldb -P returned invalid path, probably too old
             pass
@@ -71,10 +71,9 @@ def import_lldb():
     return False
 
 
-if not import_lldb():
+if not do_import_lldb():
     import vim
 
     vim.command(
-        'redraw | echo "%s"'
-        % " Error loading lldb module; vim-lldb will be disabled. Check LLDB installation or set LLDB environment variable."
+        f'redraw | echo "{"Error loading lldb module; vim-lldb will be disabled. Check LLDB installation or set LLDB environment variable."}"'
     )

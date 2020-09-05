@@ -1,6 +1,7 @@
 # Try to import all dependencies, catch and handle the error gracefully if it
 # fails.
 import logging as lg
+import sys
 
 logging = lg.getLogger("vim-lldb")
 logging.setLevel(lg.DEBUG)

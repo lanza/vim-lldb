@@ -15,7 +15,7 @@ logging = lg.getLogger("vim-lldb")
 # =================================================
 
 # Shamelessly copy/pasted from lldbutil.py in the test suite
-def state_type_to_str(enum):
+def state_type_to_str(enum: int) -> str:
     logging.debug("state_type_to_str")
     """Returns the stateType string given an enum."""
     if enum == lldb.eStateInvalid:
@@ -240,8 +240,9 @@ class LLDBController(object):
             self.processPendingEvents(self.eventDelayLaunch)
 
     def doTarget(self, args):
-        """ Pass target command to interpreter, except if argument is not one of the valid options, or
-        is create, in which case try to create a target with the argument as the executable. For example:
+        """ Pass target command to interpreter, except if argument is not one of
+        the valid options, or is create, in which case try to create a target
+        with the argument as the executable. For example:
           target list        ==> handled by interpreter
           target create blah ==> custom creation of target 'blah'
           target blah        ==> also creates target blah
@@ -470,4 +471,4 @@ def returnCompleteWindow(a, l, p):
 
 
 global ctrl
-ctrl = LLDBController()
+ctrl: LLDBController = LLDBController()
